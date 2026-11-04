@@ -1,0 +1,64 @@
+package com.biolab.ecommerce.service;
+
+import com.biolab.ecommerce.DTOs.CategoriaRequest;
+import com.biolab.ecommerce.DTOs.CategoriaResponse;
+import com.biolab.ecommerce.entities.Categoria;
+import com.biolab.ecommerce.repository.CategoriaRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CategoriaService {
+    private final CategoriaRepository categoriaRepository;
+
+    public CategoriaService(CategoriaRepository categoriaRepository) {
+        this.categoriaRepository = categoriaRepository;
+    }
+
+
+    public String criarCategoria(CategoriaRequest dto) {
+        Categoria categoria = new Categoria();
+        categoria.setNome((dto.getNome()));
+        categoriaRepository.save(categoria);
+
+        return "Categoria salva com sucesso";
+    }
+
+    public CategoriaResponse buscarpoid(Long id) {
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException
+                        ("Categoria não encontrado com id" + id));
+        return new CategoriaResponse(
+                categoria.getId(),
+                categoria.getNome()
+
+        );
+    }
+
+    public String deletar(Long id) {
+        if (!categoriaRepository.existsById(id)) {
+            return "categoria não existe";
+        }
+        categoriaRepository.deleteById(id);
+        return "Categoria deletado com sucesso";
+    }
+
+    public CategoriaResponse atualizarid(Long id, CategoriaRequest request) {
+        Categoria categoriaExistente = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada com id :" + id));
+        categoriaExistente.setNome(request.getNome());
+        Categoria atualizando = categoriaRepository.save(categoriaExistente);
+        return new CategoriaResponse(atualizando.getId(), atualizando.getNome());
+    }
+    public List<CategoriaResponse> Listarcategoria(){
+        return categoriaRepository.findAll().stream()
+                .map((categoria -> new CategoriaResponse(
+                        categoria.getId(),
+                        categoria.getNome()
+
+                ))).toList();
+    }
+}
+
+

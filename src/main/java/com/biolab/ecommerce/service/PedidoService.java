@@ -1,0 +1,54 @@
+package com.biolab.ecommerce.service;
+
+import com.biolab.ecommerce.DTOs.*;
+import com.biolab.ecommerce.entities.Pedido;
+import com.biolab.ecommerce.entities.enums.StatusPedido;
+import com.biolab.ecommerce.entities.Usuario;
+import com.biolab.ecommerce.repository.PedidoRepository;
+import com.biolab.ecommerce.repository.UsuarioRepository;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+
+@Service
+public class PedidoService {
+    private final UsuarioRepository usuarioRepository;
+    private final PedidoRepository pedidoRepository;
+
+    public PedidoService(UsuarioRepository usuarioRepository, PedidoRepository pedidoRepository) {
+        this.usuarioRepository = usuarioRepository;
+        this.pedidoRepository = pedidoRepository;
+    }
+
+
+    public String criarpedido(PedidoRequest dto) {
+        Usuario u = usuarioRepository.findById(dto.getIdcliente()).orElseThrow();
+        Pedido p = new Pedido();
+        p.setCliente(u);
+        p.setMomento(Instant.now());
+        p.setStatus(StatusPedido.AGUARDANDO_PAGAMENTO);
+        pedidoRepository.save(p);
+        return "Pedido criado com sucesso";
+    }
+
+    public String deletarPedido(Long id) {
+        Pedido pedido = pedidoRepository.findById(id).orElseThrow();
+        pedidoRepository.deleteById(id);
+        return "Excluido com sucesso";
+    }
+
+    public List<PedidoResponse> Listarpedido() {
+        return pedidoRepository.findAll().stream()
+                .map((pedido -> new PedidoResponse(
+                        pedido.getId(),
+                        pedido.getMomento(),
+                        pedido.getStatus(),
+                        pedido.getStatus(),
+                        pedido.getPagamento()
+                        ))).toList();
+    }
+
+
+
+}
